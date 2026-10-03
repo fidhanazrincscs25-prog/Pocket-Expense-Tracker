@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Expense Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Outfit:wght@400;500;600&display=swap');
+:root{--bg:#efe9fb;--ink:#2a1647;--mute:#7a6a99;--line:#e6defa;--plum:#4b2a8c;--violet:#7a4fd6;--mango:#ffb84a;--coral:#ff6b6b;--mint:#2bb88a;--soft:0 12px 30px -12px rgba(75,42,140,.28)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Outfit,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5;min-height:100vh;
+background:radial-gradient(500px 360px at 8% 0%,#ffd9e8 0,transparent 70%),radial-gradient(520px 400px at 100% 12%,#d7ccff 0,transparent 70%),radial-gradient(500px 400px at 50% 100%,#ffe9c2 0,transparent 70%),var(--bg);background-attachment:fixed}
+h1,h2,h3,.big{font-family:"Bricolage Grotesque",Georgia,sans-serif;margin:0;letter-spacing:-.02em}
+.wrap{max-width:940px;margin:0 auto;padding:18px}
+.card{background:#fff;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:var(--soft)}
+.card h3{font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.ico{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem}
+.i1{background:#e8defc}.i2{background:#d2f5e8}.i3{background:#ffe0e0}.i4{background:#fff0cf}.i5{background:#e8defc}
+input,select,button{font:inherit;padding:11px 14px;border-radius:14px;border:2px solid var(--line);width:100%;margin-top:6px;background:#fbf9ff;color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:none;border-color:var(--violet);box-shadow:0 0 0 4px rgba(122,79,214,.18)}
+button{border:0;cursor:pointer;font-weight:600;color:#fff;background:var(--plum);margin-top:14px;transition:transform .15s,box-shadow .15s}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 18px -8px var(--plum)}
+button.b-inc{background:var(--mint)}button.b-exp{background:var(--coral)}button.b-bud{background:var(--mango);color:#4a2e00}
+button.ghost{background:transparent;color:var(--plum);border:2px solid var(--line);box-shadow:none}
+button.del{background:#fff0f0;color:var(--coral);width:32px;height:32px;padding:0;margin:0;border-radius:50%}
+label{font-size:.82rem;color:var(--mute);font-weight:500;display:block;margin-top:12px}
+.row{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 18px}
+.top h2{font-size:1.7rem}.top button{width:auto;margin:0;padding:9px 18px}
+
+/* wallet hero */
+.hero{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;color:#fff;border-radius:30px 30px 30px 8px;padding:26px;margin-bottom:12px;
+background:linear-gradient(135deg,#4b2a8c 0%,#7a4fd6 60%,#b07cf0 100%);box-shadow:0 22px 40px -18px rgba(75,42,140,.7);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-50px;top:-50px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.08)}
+.chip{display:inline-block;background:rgba(255,255,255,.18);padding:4px 14px;border-radius:99px;font-size:.82rem}
+.big{font-size:clamp(2.4rem,9vw,3.8rem);font-weight:800;margin:8px 0 14px}
+.mini{display:flex;gap:22px;flex-wrap:wrap}
+.mini small{display:block;opacity:.75;font-size:.78rem}.mini b{font-size:1.05rem;font-weight:600}
+.ring{position:relative;width:132px;height:132px;flex:none;z-index:1}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%}
+.ring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.trk{stroke:rgba(255,255,255,.2)}.prg{stroke:#7ef0c4;transition:stroke-dashoffset .6s,stroke .3s}
+.ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ringtxt b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.6rem}.ringtxt small{font-size:.7rem;opacity:.8}
+.alert{padding:13px 16px;border-radius:16px;margin-bottom:18px;font-weight:600;display:none}
+.alert.warn{display:block;background:#fff0cf;color:#8a5a00}
+.alert.over{display:block;background:#ffe0e0;color:#b32d2d}
+
+/* categories */
+.cat{padding:9px 0}
+.cat .l{display:flex;justify-content:space-between;font-size:.95rem}
+.cat .t{height:8px;border-radius:8px;background:var(--line);margin-top:6px;overflow:hidden}
+.cat .t i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--violet),var(--coral))}
+.mrow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line)}
+.inc{color:var(--mint);font-weight:600}.exp{color:var(--coral);font-weight:600}
+.empty-s{color:var(--mute);margin:12px 0 0}
+
+/* history */
+.scroll{overflow-x:auto;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th{text-align:left;color:var(--mute);font-weight:500;font-size:.8rem;padding:8px 8px}
+td{padding:12px 8px;border-top:1px solid var(--line)}
+.badge{padding:3px 12px;border-radius:99px;font-size:.78rem;font-weight:600}
+.badge.income{background:#d2f5e8;color:#127a58}.badge.expense{background:#ffe0e0;color:#b32d2d}
+
+/* auth */
+.auth{max-width:420px;margin:5vh auto;position:relative}
+.logo{width:68px;height:68px;border-radius:50% 50% 50% 14px;background:linear-gradient(135deg,var(--mango),var(--coral));display:grid;place-items:center;font-size:2rem;color:#fff;font-weight:800;font-family:"Bricolage Grotesque",sans-serif;box-shadow:0 12px 24px -10px var(--coral);margin-bottom:14px}
+.auth h1{font-size:2.1rem;line-height:1.1}
+.tag{color:var(--mute);margin:8px 0 6px}
+.msg{color:#b32d2d;font-size:.88rem;min-height:1.2em;margin-top:8px}
+.coin{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffe29a,var(--mango));color:#8a5a00;display:grid;place-items:center;font-weight:700;box-shadow:inset 0 -4px 0 rgba(0,0,0,.1);animation:fl 5s ease-in-out infinite}
+.c1{width:46px;height:46px;top:-18px;right:-14px}.c2{width:30px;height:30px;bottom:-10px;left:-12px;animation-delay:-2s}
+@keyframes fl{50%{transform:translateY(-10px)}}
+@media (prefers-reduced-motion:reduce){.coin{animation:none}button{transition:none}}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- LOGIN / REGISTER -->
+<section id="authView" class="auth">
+  <div class="card">
+    <span class="coin c1">₹</span><span class="coin c2">₹</span>
+    <div class="logo">₹</div>
+    <h1>Pocket Expense Tracker</h1>
+    <p class="tag">Pocket money, but make it make sense.</p>
+    <label>Username</label><input id="u" autocomplete="username">
+    <label>Password</label><input id="p" type="password" autocomplete="current-password">
+    <div class="msg" id="authMsg"></div>
+    <button onclick="login()">Log in</button>
+    <button class="ghost" onclick="register()">Create account</button>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="appView" class="hidden">
+  <div class="top">
+    <h2 id="hello"></h2>
+    <button class="ghost" onclick="logout()">Log out</button>
+  </div>
+
+  <div class="hero">
+    <div>
+      <span class="chip">Remaining balance</span>
+      <div class="big" id="sBal">₹0</div>
+      <div class="mini">
+        <div><small>Budget</small><b id="sBudget">₹0</b></div>
+        <div><small>Income</small><b id="sInc">₹0</b></div>
+        <div><small>Spent</small><b id="sExp">₹0</b></div>
+      </div>
+    </div>
+    <div class="ring"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle id="ringc" class="prg" cx="60" cy="60" r="52"/></svg>
+      <div class="ringtxt"><b id="pct">0%</b><small>of budget used</small></div></div>
+  </div>
+  <div class="alert" id="alert"></div>
+
+  <div class="row">
+    <div class="card">
+      <h3><span class="ico i1">🎯</span>Set budget</h3>
+      <label>Period</label>
+      <select id="period"><option value="monthly">Monthly</option><option value="weekly">Weekly</option></select>
+      <label>Amount (₹)</label><input id="budget" type="number" min="1">
+      <button class="b-bud" onclick="saveBudget()">Save budget</button>
+    </div>
+    <div class="card">
+      <h3><span class="ico i2">🪙</span>Add income</h3>
+      <label>Source</label><input id="incNote" placeholder="Pocket money, stipend...">
+      <label>Amount (₹)</label><input id="incAmt" type="number" min="1">
+      <button class="b-inc" onclick="addTx('income')">Add income</button>
+    </div>
+    <div class="card">
+      <h3><span class="ico i3">🧾</span>Record expense</h3>
+      <label>Category</label>
+      <select id="cat"><option>Food</option><option>Travel</option><option>Shopping</option><option>Bills</option><option>Entertainment</option><option>Others</option></select>
+      <label>Note</label><input id="expNote" placeholder="Lunch, bus fare...">
+      <label>Amount (₹)</label><input id="expAmt" type="number" min="1">
+      <button class="b-exp" onclick="addTx('expense')">Add expense</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <h3><span class="ico i4">🍩</span>Where it went</h3>
+      <div id="cats"></div>
+    </div>
+    <div class="card">
+      <h3><span class="ico i5">📅</span>Monthly summary</h3>
+      <div id="months"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Transaction history</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Date</th><th>Type</th><th>Category / source</th><th>Note</th><th>Amount</th><th></th></tr></thead>
+      <tbody id="hist"></tbody>
+    </table></div>
+    <p id="empty" class="empty-s">No transactions yet. Add your income first, then log an expense.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+// Talks to the Java backend (PocketServer.java) with fetch()
+const $=id=>document.getElementById(id);
+const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
+const EM={Food:'🍜',Travel:'🚌',Shopping:'🛍️',Bills:'💡',Entertainment:'🎬',Others:'✨'};
+let token=null;
+try{token=localStorage.getItem('pet_token')}catch(e){}
+const keep=t=>{token=t;try{t?localStorage.setItem('pet_token',t):localStorage.removeItem('pet_token')}catch(e){}};
+
+async function api(path,params){
+  const body=new URLSearchParams(Object.assign({token:token||''},params||{}));
+  try{
+    const r=await fetch('/api/'+path,{method:'POST',body});
+    return await r.json();
+  }catch(e){return {ok:false,error:'Cannot reach the Java server. Is it running?'}}
+}
+
+async function auth(kind){
+  const res=await api(kind,{username:$('u').value.trim(),password:$('p').value});
+  if(!res.ok){$('authMsg').textContent=res.error;return}
+  keep(res.token); show();
+}
+const login=()=>auth('login'), register=()=>auth('register');
+async function logout(){await api('logout');keep(null);show()}
+
+async function saveBudget(){
+  const v=+$('budget').value; if(!(v>0)) return;
+  const r=await api('budget',{amount:v,period:$('period').value.toUpperCase()});
+  if(!r.ok) alert(r.error);
+  render();
+}
+async function addTx(type){
+  const amt=+(type==='income'?$('incAmt'):$('expAmt')).value; if(!(amt>0)) return;
+  const r=await api('tx',{type:type.toUpperCase(),category:type==='income'?'Income':$('cat').value,
+    note:(type==='income'?$('incNote'):$('expNote')).value.trim(),amount:amt});
+  if(!r.ok) return alert(r.error);
+  ['incAmt','incNote','expAmt','expNote'].forEach(i=>$(i).value='');
+  render();
+}
+async function del(id){await api('delete',{id});render()}
+
+async function show(){
+  let d=null;
+  if(token){d=await api('data'); if(!d.ok){keep(null);d=null}}
+  $('authView').classList.toggle('hidden',!!d);
+  $('appView').classList.toggle('hidden',!d);
+  $('authMsg').textContent='';
+  if(d) paint(d);
+}
+async function render(){const d=await api('data'); d.ok?paint(d):show()}
+
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function paint(d){
+  const inc=d.income, exp=d.spent, pct=d.pct;
+  $('hello').textContent='Hi, '+d.name;
+  $('period').value=d.period==='WEEKLY'?'weekly':'monthly';
+  $('budget').value=d.budget>0?d.budget:'';
+  $('sBudget').textContent=inr(d.budget)+' / '+(d.period==='WEEKLY'?'week':'month');
+  $('sInc').textContent=inr(inc); $('sExp').textContent=inr(exp); $('sBal').textContent=inr(inc-exp);
+
+  // budget limit alert + ring
+  const C=326.7, rc=$('ringc'), al=$('alert');
+  rc.style.strokeDasharray=C; rc.style.strokeDashoffset=C*(1-Math.min(pct,100)/100);
+  rc.style.stroke=pct>=100?'#ff6b6b':pct>=80?'#ffb84a':'#7ef0c4';
+  $('pct').textContent=pct+'%';
+  al.className='alert';
+  if(d.budget>0&&pct>=100){al.className='alert over';al.textContent='Over budget by '+inr(exp-d.budget)+'. Pause non-essential spending.'}
+  else if(d.budget>0&&pct>=80){al.className='alert warn';al.textContent='Careful: you have used '+pct+'% of your budget.'}
+
+  $('cats').innerHTML=d.cats.length
+    ?d.cats.map(x=>`<div class="cat"><div class="l"><span>${EM[x.c]||''} ${esc(x.c)}</span><b>${inr(x.v)}</b></div><div class="t"><i style="width:${exp>0?x.v/exp*100:0}%"></i></div></div>`).join('')
+    :'<p class="empty-s">No expenses in this period yet.</p>';
+
+  $('months').innerHTML=d.months.length
+    ?d.months.map(m=>`<div class="mrow"><span>${m.m}</span><span><span class="inc">+${inr(m.i)}</span> &nbsp; <span class="exp">-${inr(m.e)}</span></span></div>`).join('')
+    :'<p class="empty-s">Nothing to summarise yet.</p>';
+
+  $('empty').style.display=d.tx.length?'none':'block';
+  $('hist').innerHTML=d.tx.map(t=>{const k=t.type.toLowerCase();return `<tr><td>${t.date}</td><td><span class="badge ${k}">${k}</span></td><td>${esc(t.cat)}</td><td>${esc(t.note)}</td>
+    <td class="${k==='income'?'inc':'exp'}">${k==='income'?'+':'-'}${inr(t.amt)}</td>
+    <td><button class="del" onclick="del(${t.id})" aria-label="Delete">✕</button></td></tr>`}).join('');
+}
+
+show();
+</script>
+</body>
+</html>
